@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "satquery.db")
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 class DatabaseManager:
     """

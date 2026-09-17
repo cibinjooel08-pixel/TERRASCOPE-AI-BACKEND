@@ -39,7 +39,8 @@ def test_auth():
     assert res4.json()["user"]["email"] == "cibinjool08@gmail.com"
 
     # 4. Test registering a new analyst user
-    new_email = "test.analyst99@terrascope.ai"
+    import time
+    new_email = f"test.analyst{int(time.time())}@terrascope.ai"
     res5 = client.post("/api/auth/register", json={
         "email": new_email,
         "password": "securepassword123",
