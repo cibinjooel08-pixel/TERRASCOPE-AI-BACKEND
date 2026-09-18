@@ -17,9 +17,12 @@ class CDSEAuthManager:
         self._access_token: Optional[str] = None
         self._expires_at: float = 0.0
 
+    DEFAULT_CLIENT_ID = "sh-3fc3f2a5-092e-4bf8-b56a-8f30efdfeb66"
+    DEFAULT_CLIENT_SECRET = "dQkxtSSFzrTZV5MpWhh9g2ZraoFHaoGX"
+
     def get_client_credentials(self) -> Tuple[Optional[str], Optional[str]]:
-        client_id = os.getenv("SENTINEL_HUB_CLIENT_ID", "").strip()
-        client_secret = os.getenv("SENTINEL_HUB_CLIENT_SECRET", "").strip()
+        client_id = os.getenv("SENTINEL_HUB_CLIENT_ID", "").strip() or self.DEFAULT_CLIENT_ID
+        client_secret = os.getenv("SENTINEL_HUB_CLIENT_SECRET", "").strip() or self.DEFAULT_CLIENT_SECRET
         return (client_id if client_id else None, client_secret if client_secret else None)
 
     def get_token(self) -> Tuple[Optional[str], Dict[str, Any]]:
