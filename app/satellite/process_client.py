@@ -187,7 +187,7 @@ class ProcessClient:
               "responses": [
                   {
                       "identifier": "default",
-                      "format": {"type": "image/png"}
+                      "format": {"type": "image/jpeg", "quality": 95}
                   }
               ]
           },
