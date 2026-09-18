@@ -30,6 +30,30 @@ def run_satquery_analysis(req: SatQueryRequest) -> Dict[str, Any]:
     if len(req.bbox) != 4:
         raise HTTPException(status_code=400, detail="bbox must be [min_lon, min_lat, max_lon, max_lat]")
 
+    # Temporal Mission Boundary: Copernicus Sentinel constellation operational data begins in 2016
+    def parse_year(date_str: str) -> Optional[int]:
+        try:
+            return int(str(date_str)[:4])
+        except Exception:
+            return None
+
+    import re
+    year_a = parse_year(req.date_a)
+    year_b = parse_year(req.date_b)
+    query_years = [int(y) for y in re.findall(r'\b(19\d\d|20\d\d)\b', req.query)]
+    invalid_query_years = [y for y in query_years if y < 2016]
+
+    if (year_a and year_a < 2016) or (year_b and year_b < 2016) or invalid_query_years:
+        bad_year = invalid_query_years[0] if invalid_query_years else (year_a if (year_a and year_a < 2016) else year_b)
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "TEMPORAL_OUT_OF_BOUNDS",
+                "message": f"Temporal range error: Year {bad_year} precedes Copernicus constellation operational timeline.",
+                "suggestion": "Copernicus Sentinel-1 and Sentinel-2 satellite data is systematically available only from 2016 to present. Please select observation years between 2016 and 2026."
+            }
+        )
+
     analysis_id = f"SQ-{uuid.uuid4().hex[:8].upper()}"
 
     # Step 1: Query Understanding & Routing
