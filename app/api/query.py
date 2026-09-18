@@ -53,12 +53,12 @@ def run_satquery_analysis(req: SatQueryRequest) -> Dict[str, Any]:
     iso_a = best_a.get("iso_date", req.date_a)
     iso_b = best_b.get("iso_date", req.date_b)
 
-    # Step 3: Fetch processed satellite imagery buffers from Copernicus Process API
+    # Step 3: Fetch processed high-resolution satellite imagery buffers from Copernicus Process API
     img_a_bytes, meta_a = process_client.fetch_image(
-        bbox=req.bbox, date_iso=iso_a, satellite=satellite, evalscript_type="true_color"
+        bbox=req.bbox, date_iso=iso_a, satellite=satellite, evalscript_type="true_color", width=1024, height=1024
     )
     img_b_bytes, meta_b = process_client.fetch_image(
-        bbox=req.bbox, date_iso=iso_b, satellite=satellite, evalscript_type="true_color"
+        bbox=req.bbox, date_iso=iso_b, satellite=satellite, evalscript_type="true_color", width=1024, height=1024
     )
 
     is_real = (not meta_a.get("is_fallback", False)) and (not meta_b.get("is_fallback", False))

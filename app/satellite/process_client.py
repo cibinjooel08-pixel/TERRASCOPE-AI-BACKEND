@@ -3,7 +3,7 @@ import io
 import requests
 import numpy as np
 from datetime import datetime, timedelta
-from PIL import Image, ImageDraw, ImageEnhance, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageOps, ImageFilter
 from typing import Dict, Any, List, Optional, Tuple
 from app.satellite.cdse_auth import cdse_auth
 
@@ -123,8 +123,8 @@ class ProcessClient:
       date_iso: str,
       satellite: str = "sentinel-2-l2a",
       evalscript_type: str = "true_color",
-      width: int = 512,
-      height: int = 512
+      width: int = 1024,
+      height: int = 1024
   ) -> Tuple[Optional[bytes], Dict[str, Any]]:
       token, auth_info = cdse_auth.get_token()
 
@@ -241,11 +241,19 @@ class ProcessClient:
   def _enhance_image_brightness(self, raw_bytes: bytes) -> bytes:
       try:
           img = Image.open(io.BytesIO(raw_bytes)).convert("RGB")
-          # Subtle natural enhancement without artificial color shifting
+          # 1. Atmospheric Dehazing & Contrast Boost
           enhancer_c = ImageEnhance.Contrast(img)
-          img = enhancer_c.enhance(1.08)
+          img = enhancer_c.enhance(1.14)
+          # 2. Natural Earth Spectral Vibrance
           enhancer_b = ImageEnhance.Brightness(img)
           img = enhancer_b.enhance(1.05)
+          enhancer_s = ImageEnhance.Color(img)
+          img = enhancer_s.enhance(1.12)
+          # 3. High-Pass Unsharp Mask for Crisp Roads, Buildings, and Waterlines
+          img = img.filter(ImageFilter.UnsharpMask(radius=1.5, percent=135, threshold=2))
+          # 4. Fine-detail Sharpness
+          enhancer_sharp = ImageEnhance.Sharpness(img)
+          img = enhancer_sharp.enhance(1.25)
 
           buf = io.BytesIO()
           img.save(buf, format="PNG")
@@ -290,8 +298,10 @@ class ProcessClient:
               color_adj = 0.88 + (((date_seed * 7) % 21) * 0.015)
 
               img = ImageEnhance.Brightness(img).enhance(brightness_adj)
-              img = ImageEnhance.Contrast(img).enhance(contrast_adj)
-              img = ImageEnhance.Color(img).enhance(color_adj)
+              img = ImageEnhance.Contrast(img).enhance(contrast_adj * 1.08)
+              img = ImageEnhance.Color(img).enhance(color_adj * 1.08)
+              img = img.filter(ImageFilter.UnsharpMask(radius=1.5, percent=130, threshold=2))
+              img = ImageEnhance.Sharpness(img).enhance(1.25)
 
               draw = ImageDraw.Draw(img)
               watermark = f"Terrascope AI | {satellite.upper()} | {date_iso[:10]}"
