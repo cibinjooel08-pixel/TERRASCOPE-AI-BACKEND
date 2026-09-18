@@ -48,8 +48,10 @@ def run_satquery_analysis(req: SatQueryRequest) -> Dict[str, Any]:
     act_date_b = cat_b.get("actual_date", req.date_b)
 
     # Use actual satellite pass ISO dates from STAC Catalog
-    iso_a = cat_a.get("best_acquisition", {}).get("iso_date", req.date_a)
-    iso_b = cat_b.get("best_acquisition", {}).get("iso_date", req.date_b)
+    best_a = cat_a.get("best_acquisition") or {}
+    best_b = cat_b.get("best_acquisition") or {}
+    iso_a = best_a.get("iso_date", req.date_a)
+    iso_b = best_b.get("iso_date", req.date_b)
 
     # Step 3: Fetch processed satellite imagery buffers from Copernicus Process API
     img_a_bytes, meta_a = process_client.fetch_image(
