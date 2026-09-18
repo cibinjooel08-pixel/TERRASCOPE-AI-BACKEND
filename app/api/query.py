@@ -48,9 +48,9 @@ def run_satquery_analysis(req: SatQueryRequest) -> Dict[str, Any]:
         raise HTTPException(
             status_code=400,
             detail={
-                "error_code": "TEMPORAL_OUT_OF_BOUNDS",
-                "message": f"Temporal range error: Year {bad_year} precedes Copernicus constellation operational timeline.",
-                "suggestion": "Copernicus Sentinel-1 and Sentinel-2 satellite data is systematically available only from 2016 to present. Please select observation years between 2016 and 2026."
+                "error_code": "INVALID_YEAR",
+                "message": f"Invalid Date: Year {bad_year} is below 2016. (Please select years between 2016 and 2026)",
+                "suggestion": "Copernicus Sentinel-1 and Sentinel-2 data archive begins from 2016."
             }
         )
 
